@@ -20,15 +20,15 @@ namespace Project_FinchControl
 
     class Program
     {
-        // ***********************************************************
+        // **************************************************************************
         //
         // Title: Finch Control
-        // Description: Added Light Show and Dance Recital Options
+        // Description: Added Light Show, Dance Recital, and Awesome Singing options
         // Application Type: Console
         // Author: Kage-Weir, Nakiah
         // Date Created: 10/21/2020
         //
-        // ***********************************************************
+        // **************************************************************************
         /// <summary>
         /// first method run when the app starts up
         /// </summary>
