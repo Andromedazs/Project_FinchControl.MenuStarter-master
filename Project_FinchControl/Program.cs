@@ -23,12 +23,11 @@ namespace Project_FinchControl
         // **************************************************************************
         //
         // Title: Finch Control
-        // Description: Added Data recorder menus and options as well as Regions for 
-        //              Data Recorder and Alarm System.
+        // Description: Added Alarm System menu options.
         // Application Type: Console
         // Author: Kage-Weir, Nakiah
-        // Date Created: 10/21/2020
-        // Last Modified: 10/25/2020
+        // Date Created: 11/03/2020
+        // Last Modified: 11/ /2020
         //
         // **************************************************************************
 
@@ -103,7 +102,7 @@ namespace Project_FinchControl
                         break;
 
                     case "d":
-
+                        LightAlarmDisplayMenuScreen(finchRobot);
                         break;
 
                     case "e":
@@ -128,6 +127,7 @@ namespace Project_FinchControl
 
             } while (!quitApplication);
         }
+
 
         #region TALENT SHOW
 
@@ -480,7 +480,7 @@ namespace Project_FinchControl
 
             return temperatures;
         }
-    
+
 
         /// <summary>
         /// Gets data point frequency from user
@@ -489,12 +489,12 @@ namespace Project_FinchControl
         static double DataRecorderDisplayGetDataPointFrequency()
         {
             double dataPointFrequency;
-           
+
             DisplayScreenHeader("Data Point Frequency");
 
             Console.Write("\tPlease enter how frequent you want the data points. ");
             Console.ReadLine();
-            
+
 
             // Validate User input
             double.TryParse(Console.ReadLine(), out dataPointFrequency);
@@ -531,143 +531,364 @@ namespace Project_FinchControl
 
         #region ALARM SYSTEM
 
+        /// <summary>
+        /// ********************************************
+        /// *           Light Alarm Menu               *
+        /// ********************************************
+        /// </summary>
+        /// <param name="finchRobot"></param>
+        static void LightAlarmDisplayMenuScreen(Finch finchRobot)
+        {
+
+            //Switch case menu choice
+
+            {
+
+                Console.CursorVisible = true;
+
+                bool quitMenu = false;
+                string menuChoice;
+
+                string sensorsToMonitor = "";
+                string rangeType = "";
+                int minMaxThresholdValue = 0;
+                int timeToMonitor = 0;
+
+                do
+                {
+                    DisplayScreenHeader("Alarm System Menu");
+
+                    //
+                    // get user menu choice
+                    //
+                    Console.WriteLine("\ta) Set Sensors to Monitor");
+                    Console.WriteLine("\tb) Set Range Type");
+                    Console.WriteLine("\tc) Set Minimum/Maximum Values");
+                    Console.WriteLine("\td) Set Time for Monitoring");
+                    Console.WriteLine("\te) Set Alarm");
+                    Console.WriteLine("\tq) Main Menu");
+                    Console.Write("\t\tEnter Choice:");
+                    menuChoice = Console.ReadLine().ToLower();
+
+                    //
+                    // process user menu choice
+                    //
+                    switch (menuChoice)
+                    {
+                        case "a":
+                            sensorsToMonitor = LightAlarmDisplaySetSensorsToMonitor();
+                            break;
+
+                        case "b":
+                            rangeType = LightAlarmDisplaySetRangeType();
+                            break;
+
+                        case "c":
+                            minMaxThresholdValue = LightAlarmSetMinMaxthresholdValue(rangeType, finchRobot);
+                            break;
+
+                        case "d":
+                            timeToMonitor = LightAlarmSetTimeToMonitor();
+                            break;
+
+                        case "e":
+                            LightAlarmSetAlarm(finchRobot, sensorsToMonitor, rangeType, minMaxThresholdValue, timeToMonitor);
+                            break;
+
+                        case "q":
+                            quitMenu = true;
+                            break;
+
+                        default:
+                            Console.WriteLine();
+                            Console.WriteLine("\tPlease enter a letter for the menu choice.");
+                            DisplayContinuePrompt();
+                            break;
+                    }
+
+                } while (!quitMenu);
+            }
+
+            static string LightAlarmDisplaySetSensorsToMonitor()
+            {
+
+                string sensorsToMonitor;
+
+                DisplayScreenHeader("Sensors to Monitor");
+                               
+                Console.WriteLine("\tWhat Sensors would you like to use? Left, right, or Both?");
+                sensorsToMonitor = Console.ReadLine();
+                
+                Console.WriteLine($"\tAlright I will monitor {sensorsToMonitor} sensor(s)");
+
+                DisplayMenuPrompt("Alarm System");
+
+                return sensorsToMonitor;
+
+            }
+
+            static string LightAlarmDisplaySetRangeType()
+            {
+
+                string rangeType;
 
 
+                DisplayScreenHeader("Range Type");
+
+                Console.WriteLine("\tPlease choose minimum or maximum range");
+                rangeType = Console.ReadLine();
+
+                Console.WriteLine($"\tAlright I will monitor it with {rangeType} range");
+
+                DisplayMenuPrompt("Alarm System");
+
+                return rangeType;
+
+            }
+
+            static int LightAlarmSetMinMaxthresholdValue(string rangeType, Finch finchRobot)
+            {
+
+                int minMaxThresholdValue;
+
+                DisplayScreenHeader("Min/Max Threshold Value");
+
+                Console.WriteLine($"\tLeft Light Sensor Value: {finchRobot.getLeftLightSensor()}");
+                Console.WriteLine($"\tRight Light Sensor Value: {finchRobot.getRightLightSensor()}");
+
+                // Validate Value
+                Console.Write($"\tEnter the {rangeType} light sensor value:");
+                int.TryParse(Console.ReadLine(), out minMaxThresholdValue);
+                                
+                DisplayMenuPrompt("Alarm System Menu");
 
 
+                return minMaxThresholdValue;
+
+            }
+
+            static int LightAlarmSetTimeToMonitor()
+            {
+
+                int timeTomonitor;
+
+                DisplayScreenHeader("Time to Monitor");
 
 
+                // Validate Value
+                Console.Write($"\tTime to monitor");
+                int.TryParse(Console.ReadLine(), out timeTomonitor);
+
+                // Echo Value
+                Console.WriteLine($"\tAlright I will monitor it for {timeTomonitor} second(s)");
 
 
+                DisplayMenuPrompt("Alarm System Menu");
 
-        #endregion
+                return timeTomonitor;
+            }
+
+            static void LightAlarmSetAlarm(Finch finchRobot, string sensorsToMonitor, string rangeType, int minMaxThresholdValue, int timeToMonitor)
+            {
+                int secondsElapsed = 0;
+                bool thresholdExceeded = false;
+                int currentLightSensorValue = 0;
+
+                DisplayScreenHeader("Set Alarm");
+
+                Console.WriteLine($"\tSensors to Monitor: {sensorsToMonitor}");
+                Console.WriteLine("\tRange Type: {0}", rangeType);
+                Console.WriteLine("\tMin/Max Threshold Value: " + minMaxThresholdValue);
+                Console.WriteLine($"\tTime to Monitor: {timeToMonitor}");
+
+                Console.WriteLine("\tPress any key to begin monitoring.");
+                Console.ReadKey();
+                Console.WriteLine();
+
+                while ((secondsElapsed < timeToMonitor) && !thresholdExceeded)
+                {
+
+                    if (thresholdExceeded)
+                    {
+                        Console.WriteLine($"\tThe {rangeType} threshold value of {minMaxThresholdValue} has been exceeded by the current light sensor value(s) of {currentLightSensorValue}.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"\tThe {rangeType} threshold value of {minMaxThresholdValue} has not been exceeded by the current light sensor value(s) of {currentLightSensorValue}.");
+                    }
+                    switch (sensorsToMonitor)
+                    {
+                        case "left":
+                            currentLightSensorValue = finchRobot.getLeftLightSensor();
+                            break;
+
+                        case "right":
+                            currentLightSensorValue = finchRobot.getRightLightSensor();
+                            break;
+
+                        case "both":
+                            currentLightSensorValue = (finchRobot.getLeftLightSensor() + finchRobot.getRightLightSensor()) / 2;
+                            break;
+
+
+                    }
+
+                    switch (rangeType)
+                    {
+                        case "minimum":
+                            if (currentLightSensorValue < minMaxThresholdValue)
+                            {
+                                thresholdExceeded = true;
+                            }
+                            break;
+                        case "maximum":
+                            if (currentLightSensorValue > minMaxThresholdValue)
+                            {
+                                thresholdExceeded = true;
+                            }
+                            break;
+
+                    }
+                    finchRobot.wait(1000);
+                    secondsElapsed++;
+
+                }
+
+                DisplayMenuPrompt("Alarm System Menu");
+            }
+        }
+
+            #endregion
 
         #region FINCH ROBOT MANAGEMENT
 
-        /// <summary>
-        /// *****************************************************************
-        /// *               Disconnect the Finch Robot                      *
-        /// *****************************************************************
-        /// </summary>
-        /// <param name="finchRobot">finch robot object</param>
-        static void DisplayDisconnectFinchRobot(Finch finchRobot)
-        {
-            Console.CursorVisible = false;
+            /// <summary>
+            /// *****************************************************************
+            /// *               Disconnect the Finch Robot                      *
+            /// *****************************************************************
+            /// </summary>
+            /// <param name="finchRobot">finch robot object</param>
+            static void DisplayDisconnectFinchRobot(Finch finchRobot)
+            {
+                Console.CursorVisible = false;
 
-            DisplayScreenHeader("Disconnect Finch Robot");
+                DisplayScreenHeader("Disconnect Finch Robot");
 
-            Console.WriteLine("\tAbout to disconnect from the Finch robot.");
-            DisplayContinuePrompt();
+                Console.WriteLine("\tAbout to disconnect from the Finch robot.");
+                DisplayContinuePrompt();
 
-            finchRobot.disConnect();
+                finchRobot.disConnect();
 
-            Console.WriteLine("\tThe Finch robot is now disconnect.");
+                Console.WriteLine("\tThe Finch robot is now disconnect.");
 
-            DisplayMenuPrompt("Main Menu");
-        }
+                DisplayMenuPrompt("Main Menu");
+            }
 
-        /// <summary>
-        /// *****************************************************************
-        /// *                  Connect the Finch Robot                      *
-        /// *****************************************************************
-        /// </summary>
-        /// <param name="finchRobot">finch robot object</param>
-        /// <returns>notify if the robot is connected</returns>
-        static bool DisplayConnectFinchRobot(Finch finchRobot)
-        {
-            Console.CursorVisible = false;
+            /// <summary>
+            /// *****************************************************************
+            /// *                  Connect the Finch Robot                      *
+            /// *****************************************************************
+            /// </summary>
+            /// <param name="finchRobot">finch robot object</param>
+            /// <returns>notify if the robot is connected</returns>
+            static bool DisplayConnectFinchRobot(Finch finchRobot)
+            {
+                Console.CursorVisible = false;
 
-            bool robotConnected;
+                bool robotConnected;
 
-            DisplayScreenHeader("Connect Finch Robot");
+                DisplayScreenHeader("Connect Finch Robot");
 
-            Console.WriteLine("\tAbout to connect to Finch robot. Please be sure the USB cable is connected to the robot and computer now.");
-            DisplayContinuePrompt();
+                Console.WriteLine("\tAbout to connect to Finch robot. Please be sure the USB cable is connected to the robot and computer now.");
+                DisplayContinuePrompt();
 
-            robotConnected = finchRobot.connect();
+                robotConnected = finchRobot.connect();
 
-            // TODO test connection and provide user feedback - text, lights, sounds
-            finchRobot.setLED(255, 0, 255);
-            //DisplayMenuPrompt("Main Menu");
+                // TODO test connection and provide user feedback - text, lights, sounds
+                finchRobot.setLED(255, 0, 255);
+                //DisplayMenuPrompt("Main Menu");
 
-            //
-            // reset finch robot
-            //
-            finchRobot.setLED(0, 0, 0);
-            finchRobot.noteOff();
+                //
+                // reset finch robot
+                //
+                finchRobot.setLED(0, 0, 0);
+                finchRobot.noteOff();
 
-            return robotConnected;
-        }
+                return robotConnected;
+            }
 
-        #endregion
+            #endregion
 
         #region USER INTERFACE
 
-        /// <summary>
-        /// *****************************************************************
-        /// *                     Welcome Screen                            *
-        /// *****************************************************************
-        /// </summary>
-        static void DisplayWelcomeScreen()
-        {
-            Console.CursorVisible = false;
+            /// <summary>
+            /// *****************************************************************
+            /// *                     Welcome Screen                            *
+            /// *****************************************************************
+            /// </summary>
+            static void DisplayWelcomeScreen()
+            {
+                Console.CursorVisible = false;
 
-            Console.Clear();
-            Console.WriteLine();
-            Console.WriteLine("\t\tFinch Control");
-            Console.WriteLine();
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine("\t\tFinch Control");
+                Console.WriteLine();
 
-            DisplayContinuePrompt();
-        }
+                DisplayContinuePrompt();
+            }
 
-        /// <summary>
-        /// *****************************************************************
-        /// *                     Closing Screen                            *
-        /// *****************************************************************
-        /// </summary>
-        static void DisplayClosingScreen()
-        {
-            Console.CursorVisible = false;
+            /// <summary>
+            /// *****************************************************************
+            /// *                     Closing Screen                            *
+            /// *****************************************************************
+            /// </summary>
+            static void DisplayClosingScreen()
+            {
+                Console.CursorVisible = false;
 
-            Console.Clear();
-            Console.WriteLine();
-            Console.WriteLine("\t\tThank you for using Finch Control!");
-            Console.WriteLine();
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine("\t\tThank you for using Finch Control!");
+                Console.WriteLine();
 
-            DisplayContinuePrompt();
-        }
+                DisplayContinuePrompt();
+            }
 
-        /// <summary>
-        /// display continue prompt
-        /// </summary>
-        static void DisplayContinuePrompt()
-        {
-            Console.WriteLine();
-            Console.WriteLine("\tPress any key to continue.");
-            Console.ReadKey();
-        }
+            /// <summary>
+            /// display continue prompt
+            /// </summary>
+            static void DisplayContinuePrompt()
+            {
+                Console.WriteLine();
+                Console.WriteLine("\tPress any key to continue.");
+                Console.ReadKey();
+            }
 
-        /// <summary>
-        /// display menu prompt
-        /// </summary>
-        static void DisplayMenuPrompt(string menuName)
-        {
-            Console.WriteLine();
-            Console.WriteLine($"\tPress any key to return to the {menuName} Menu.");
-            Console.ReadKey();
-        }
+            /// <summary>
+            /// display menu prompt
+            /// </summary>
+            static void DisplayMenuPrompt(string menuName)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"\tPress any key to return to the {menuName} Menu.");
+                Console.ReadKey();
+            }
 
-        /// <summary>
-        /// display screen header
-        /// </summary>
-        static void DisplayScreenHeader(string headerText)
-        {
-            Console.Clear();
-            Console.WriteLine();
-            Console.WriteLine("\t\t" + headerText);
-            Console.WriteLine();
-        }
+            /// <summary>
+            /// display screen header
+            /// </summary>
+            static void DisplayScreenHeader(string headerText)
+            {
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine("\t\t" + headerText);
+                Console.WriteLine();
+            }
 
-        #endregion
+            #endregion
+
+        
     }
+
 }
